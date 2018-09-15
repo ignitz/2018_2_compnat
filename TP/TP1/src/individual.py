@@ -1,6 +1,10 @@
-import numpy as np
+
 import hashlib as hl
-from utils import *
+
+import numpy as np
+
+from utils import print_blue
+
 
 class Node:
     """
@@ -8,16 +12,19 @@ class Node:
     """
     def __init__(self, node):
         self.children = node
-    
+
     def eval(self, values):
         return self.children.eval(values)
-    
+
     def walk(self):
         response = self.children.walk(self, 0)
         if type(response) is not list:
             response = [response]
         return response
-    
+
+    def copy(self):
+        return Node(self.node.copy())
+
     def __str__(self):
         return self.children.__str__()
 
@@ -36,15 +43,17 @@ class Constant(Node):
     value = 0.0
 
     def __init__(self, value):
-        assert(type(value) is int or type(value) is float or type(value) is np.array or type(value) is np.matrix)
         self.value = float(value)
 
     def eval(self, values=None):
         return self.value
-    
+
     def walk(self, parent, depth):
         return (parent, self, self.get_unique_id(), depth + 1)
-    
+
+    def copy(self):
+        return Constant(self.value)
+
     def __str__(self):
         return str(np.around(self.value, decimals=2))
 
@@ -69,7 +78,7 @@ class Operator(Node):
         self.operator = operator
         self.node_left = node_left
         self.node_right = node_right
-    
+
     def handle_div(self, values):
         """
         return max of dataset if div 0... how to get this max? global?
@@ -79,7 +88,7 @@ class Operator(Node):
             return float('inf')
         else:
             return self.node_left.eval(values) / self.node_right.eval(values)
-    
+
     def eval(self, values):
         a = self.node_left.eval(values)
         b = self.node_right.eval(values)
@@ -98,7 +107,7 @@ class Operator(Node):
             return a / divisor
         else:
             raise 'operator invalid'
-    
+
     def walk(self, parent, depth):
         a = self.node_left.walk(self, depth + 1)
         if type(a) is not list:
@@ -112,7 +121,11 @@ class Operator(Node):
             response += b
         response += [(parent, self, self.get_unique_id(), depth + 1)]
         return response
-    
+
+    def copy(self):
+        return Operator(self.operator, self.node_left.copy(),
+                        self.node_right.copy())
+
     def get_operator_char(self):
         return {
             'add': '+',
@@ -133,15 +146,18 @@ class Variable(Node):
     """
     def __init__(self, dim):
         self.dim = dim
-    
+
     def get_dim(self):
         return self.dim
 
     def eval(self, values):
         return values.item(self.dim)
-    
+
     def walk(self, parent, depth):
         return (parent, self, self.get_unique_id(), depth + 1)
+
+    def copy(self):
+        return Variable(self.dim)
 
     def __str__(self):
         return 'X' + str(self.dim)
@@ -162,7 +178,7 @@ class Function(Node):
         else:
             response = a
         return response + [(parent, self, self.get_unique_id(), depth + 1)]
-    
+
 
 class Sin(Function):
     """
@@ -171,12 +187,15 @@ class Sin(Function):
     def eval(self, values):
         return np.sin(self.node.eval(values))
 
+    def copy(self):
+        return Sin(self.node.copy())
+
     def __str__(self):
         if type(self.node) is Operator:
             return 'sin' + str(self.node)
         else:
             return 'sin(' + str(self.node) + ')'
-        
+
 
 class Cos(Function):
     """
@@ -184,7 +203,10 @@ class Cos(Function):
     """
     def eval(self, values):
         return np.cos(self.node.eval(values))
-    
+
+    def copy(self):
+        return Cos(self.node.copy())
+
     def __str__(self):
         if type(self.node) is Operator:
             return 'cos' + str(self.node)
@@ -198,7 +220,10 @@ class Exp(Function):
     """
     def eval(self, values):
         return np.exp(self.node.eval(values))
-    
+
+    def copy(self):
+        return Exp(self.node.copy())
+
     def __str__(self):
         if type(self.node) is Operator:
             return 'exp' + str(self.node)
@@ -217,7 +242,10 @@ class Ln(Function):
             return float('inf')
         else:
             return np.log(eval_value)
-    
+
+    def copy(self):
+        return Sin(self.node.copy())
+
     def __str__(self):
         if type(self.node) is Operator:
             return 'ln' + str(self.node)
@@ -227,43 +255,48 @@ class Ln(Function):
 
 def generate_operator(n_dim, depth):
     poss_operators = [0, 0, 0, 1, 1, 2, 2, 3]
-    index = poss_operators[np.random.random_integers(0, len(poss_operators)-1)]
-    operator = ['add','sub','mul','div'][index]
-    node_left = generate_subtree(n_dim, depth-1)
-    node_right = generate_subtree(n_dim, depth-1)
+    random_int = np.random.random_integers(0, len(poss_operators) - 1)
+    index = poss_operators[random_int]
+    operator = ['add', 'sub', 'mul', 'div'][index]
+    node_left = generate_subtree(n_dim, depth - 1)
+    node_right = generate_subtree(n_dim, depth - 1)
     # node_left = Sin(0)
     # node_right = Sin(0)
     # adjust to precedence to remove ambig...
-    typeA = type(node_left)
-    typeB = type(node_right)
-    if (typeA is Constant) and (typeB is Constant):
+    type_a = type(node_left)
+    type_b = type(node_right)
+    if (type_a is Constant) and (type_b is Constant):
         return Constant(Operator(operator, node_left, node_right).eval(0.0))
 
     if operator in ['add', 'sub', 'mul']:
-        if typeB is Constant:
-            if (typeA is not Constant):
+        if type_b is Constant:
+            if (type_a is not Constant):
                 node_left, node_right = node_right, node_left
-        elif typeB is Variable:
+        elif type_b is Variable:
             if (isinstance(node_left, Function)):
                 node_left, node_right = node_right, node_left
-        else: # is instance of Function
-            if typeB is Sin:
-                if (typeA is Cos) or (typeA is Exp) or (typeA is Ln):
+        # is instance of Function
+        else:
+            if type_b is Sin:
+                if (type_a is Cos) or (type_a is Exp) or (type_a is Ln):
                     node_left, node_right = node_right, node_left
-            if typeB is Cos:
-                if (typeA is Exp) or (typeA is Ln):
+            if type_b is Cos:
+                if (type_a is Exp) or (type_a is Ln):
                     node_left, node_right = node_right, node_left
-            if typeB is Exp:
-                if typeA is Ln:
+            if type_b is Exp:
+                if type_a is Ln:
                     node_left, node_right = node_right, node_left
-    
+
     if operator in ['add', 'sub']:
         # try to force precedence 'parenteses' to the left
         if type(node_right) is Operator:
             if node_right.operator in ['add', 'sub']:
                 operator, node_right.operator = node_right.operator, operator
-                
-                auxA, auxB, auxC = node_left, node_right.node_left, node_right.node_right
+
+                auxA, auxB, auxC = (node_left,
+                                    node_right.node_left,
+                                    node_right.node_right
+                                    )
 
                 node_left = node_right
                 node_right = auxC
@@ -278,16 +311,17 @@ def generate_operator(n_dim, depth):
                 else:
                     node_left = Constant(-2)
                 operator = 'mul'
-    
+
     if operator == 'div':
         if node_left.get_unique_id() == node_right.get_unique_id():
             return Constant(1)
-        
+
         if type(node_right) is Constant:
             if node_right.eval() == 1.0:
                 return node_left
 
     return Operator(operator, node_left, node_right)
+
 
 def generate_terminal(n_dim):
     choose = np.random.random_integers(0, 5)
@@ -296,9 +330,14 @@ def generate_terminal(n_dim):
     else:
         a = np.random.normal(scale=10)
         if a > 0:
-            return Operator('sub', Variable(np.random.random_integers(0, n_dim - 1)), Constant(a))
+            return Operator(
+                'sub', Variable(np.random.random_integers(0, n_dim - 1)),
+                Constant(a))
         else:
-            return Operator('add', Variable(np.random.random_integers(0, n_dim - 1)), Constant(-a))
+            return Operator(
+                'add', Variable(np.random.random_integers(0, n_dim - 1)),
+                Constant(-a))
+
 
 def generate_subtree(n_dim, depth):
     """
@@ -313,7 +352,7 @@ def generate_subtree(n_dim, depth):
     if 0 <= choose <= depth:
         return generate_operator(n_dim, depth - 1)
     elif depth < choose <= depth + 3:
-        return Variable(np.random.random_integers(0,n_dim - 1))
+        return Variable(np.random.random_integers(0, n_dim - 1))
     elif choose == depth + 4:
         return Constant(np.random.normal(scale=10))
     elif choose == depth + 5:
@@ -325,9 +364,11 @@ def generate_subtree(n_dim, depth):
     elif choose == depth + 8:
         return Ln(generate_terminal(n_dim))
 
+
 def generate_individual(n_dim, depth=7):
     return Node(generate_subtree(n_dim, depth))
-    
+
+
 def test_basic_operations():
     x1 = Variable(0)
     x2 = Variable(1)
@@ -342,17 +383,19 @@ def test_basic_operations():
     node = Operator('div', x1, x2)
     print(node.eval(values))
 
+
 def test_functions():
     sin = Sin(0)
     cos = Cos(0)
     exp = Exp(0)
     ln = Ln(0)
     for x in range(-10, 105, 5):
-        values = [x/10]
+        values = [x / 10]
         print_blue("Sin(" + str(values[0]) + ") = " + str(sin.eval(values)))
         print_blue("Cos(" + str(values[0]) + ") = " + str(cos.eval(values)))
         print_blue("E(" + str(values[0]) + ") = " + str(exp.eval(values)))
         print_blue("LN(" + str(values[0]) + ") = " + str(ln.eval(values)))
+
 
 def test_print_and_operation():
     a = Constant(1)
@@ -362,7 +405,8 @@ def test_print_and_operation():
     a = Ln(0)
     b = Cos(1)
     bar = Operator('+', a, b)
-    print(bar, ' = ', np.around(bar.eval([np.pi/2, 0]), decimals=2))
+    print(bar, ' = ', np.around(bar.eval([np.pi / 2, 0]), decimals=2))
+
 
 def test():
 
