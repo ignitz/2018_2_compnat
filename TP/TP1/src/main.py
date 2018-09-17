@@ -1,9 +1,9 @@
-
 import argparse
 import os
 import sys
 from individual import *
 import numpy as np
+from utils import log
 
 # from utils import log
 
@@ -50,7 +50,8 @@ class GeneticProgramming:
             max_depth=7,
             k=2,
             prob_c=0.5,
-            prob_m=0.5
+            prob_m=0.5,
+            generations=10
         ):
         """Init a Genetic Programming with params and individuals (equation trees)
         
@@ -61,6 +62,7 @@ class GeneticProgramming:
             k {int} -- k individuals to use in tournament (default: {2})
             prob_c {float} -- probability of crossover (default: {0.1})
             prob_m {float} -- probability of mutation (default: {0.1})
+            generations {int} -- generations of loop
         """
 
         if prob_c + prob_m > 1.0:
@@ -71,6 +73,7 @@ class GeneticProgramming:
         self.k = k
         self.prob_c = prob_c
         self.prob_m = prob_m
+        self.generations = generations
         
         # This dict have a purpose to avoid fitness calculation
         """
@@ -108,6 +111,31 @@ class GeneticProgramming:
             self.cache_results[uniq_id] = ind_fit
 
             self.individuals.append((uniq_id, ind, ind_fit))
+        
+        if not os.path.exists(os.getcwd() + '/output'):
+            os.mkdir(os.getcwd() + '/output')
+        elif not os.path.isdir(os.getcwd() + '/output'):
+            raise 'Remove output file, the GP need to write files in output folder'
+        
+        output_filename = 'output/' + data_name + '_'
+        output_filename += 'p' + str(self.max_ind) + '_'
+        output_filename += 'g' + str(self.generations) + '_'
+        output_filename += 'k' + str(self.k) + '_'
+        output_filename += 'c' + str(self.prob_c) + '_'
+        output_filename += 'm' + str(self.prob_m) + '_'
+        count = 1
+        while True:
+            if os.path.exists(os.getcwd() + '/'+ output_filename + f"{count:03}" + '.csv'):
+                count+=1
+            else:
+                output_filename += f"{count:03}"
+                break
+        self.output_data_filename = output_filename + '.csv'
+        self.output_filename = output_filename + '.txt'
+        f = open(self.output_data_filename, 'w')
+        f.close()
+        f = open(self.output_filename, 'w')
+        f.close()
     
     def selection(self):
         choose = np.random.random()
@@ -274,27 +302,41 @@ class GeneticProgramming:
     
     def get_best_and_worst(self):
         self.individuals.sort(key=lambda x: x[2])
-        return self.individuals[0], self.individuals[-1]
+        mean_fitness = 0.0
+        count = 0
+        for fit in np.array(self.individuals)[:,2]:
+            if np.isfinite(fit):
+                mean_fitness += fit
+                count += 1
+        if count > 0:
+            mean_fitness /= count
+        else:
+            mean_fitness = float('inf')
+        return self.individuals[0], self.individuals[-1], mean_fitness
 
-    def loop(self, max_generations=50):
+    def loop(self):
         count = 1
         while True:
-            print('\nGeneration', count)
-            best, worst = self.get_best_and_worst()
-            print('Best Individual')
-            print('\t error =', best[2])
-            print('\t', ''.join([best[0][:7], '...']), best[1])
-            print('Worst Individual')
-            print('\t error =', worst[2])
-            print('\t', ''.join([worst[0][:7], '...']), worst[1])
+            best, worst, mean_fit = self.get_best_and_worst()
+            with open(self.output_filename, 'a') as f:
+                f.write('\nGeneration' + str(count) + '\n')
+                f.write('Best Individual\n')
+                f.write('\t' + ''.join([best[0][:7], '...']) + str(best[1]) + '\n')
+                f.write('\terror = ' + str(best[2]) + '\n')
+                f.write('Worst Individual\n')
+                f.write('\t' + ''.join([worst[0][:7], '...']) + str(worst[1]) + '\n')
+                f.write('\terror = ' + str(worst[2]) + '\n')
+                f.write('Mean Error\n')
+                f.write('\terror = ' + str(mean_fit) + '\n')
 
-            if count == max_generations:
+            with open(self.output_data_filename, 'a') as f:
+                f.write(str(best[2]) + ',' + str(worst[2]) + ',' + str(mean_fit) + '\n')
+
+            if count == self.generations:
                 break
 
             self.gen_new_population()
             count += 1
-
-        # TODO: show median
 
         print('\nTest data')
         y_mean = self.test_data[:, -1].mean()
@@ -308,44 +350,79 @@ class GeneticProgramming:
                 self.individuals[i][0],
                 self.individuals[i][1],
                 fit)
-        best, worst = self.get_best_and_worst()
+        best, worst, mean_fit = self.get_best_and_worst()
         print('Best Individual')
         print('\t error =', best[2])
-        print('\t', best[0], best[1])
+        print('\t', ''.join([best[0][:7], '...\t']), best[1])
         print('Worst Individual')
         print('\t error =', worst[2])
-        print('\t', worst[0], worst[1])
+        print('\t', ''.join([worst[0][:7], '...\t']), worst[1])
+        print('Mean error')
+        print('\t error =', mean_fit)
+
+        with open(self.output_filename, 'a') as f:
+            f.write('\nTest data\nBest Individual\n')
+            f.write('\t' + ''.join([best[0][:7], '...']) + str(best[1]) + '\n')
+            f.write('\terror = ' + str(best[2]) + '\n')
+            f.write('Worst Individual\n')
+            f.write('\t' + ''.join([worst[0][:7], '...']) + str(worst[1]) + '\n')
+            f.write('\terror = ' + str(worst[2]) + '\n')
+            f.write('Mean Error\n')
+            f.write('\terror = ' + str(mean_fit) + '\n')
 
         print('\nShow the five best')
+        with open(self.output_filename, 'a') as f:
+            f.write('\nShow the five best\n')
         for ind in self.individuals[:5]:
             print('\t',
-                  ''.join([ind[0][:7], '...']),
+                  ''.join([ind[0][:7], '...\t']),
                   ind[1])
-            print('\t', ind[2])
+            print('\t error =', ind[2])
+            with open(self.output_filename, 'a') as f:
+                f.write('\t' + ''.join([ind[0][:7], '...\t']) + str(ind[1]) + '\n')
+                f.write('\terror = ' + str(ind[2]))
+        
+        with open(self.output_filename, 'a') as f:
+            f.write('\nTest data\nBest Individual\n')
+            f.write('\t' + ' '.join([best[0][:7], '...']) + str(best[1]) + '\n')
+            f.write('\terror = ' + str(best[2]) + '\n')
+            f.write('Worst Individual\n')
+            f.write('\t' + ' '.join([worst[0][:7], '...']) + str(worst[1]) + '\n')
+            f.write('\t error = ' + str(worst[2]) + '\n')
+            f.write('Mean Error\n')
+            f.write('\t error = ' + str(mean_fit) + '\n')
+        
+        with open(self.output_data_filename, 'a') as f:
+            f.write(str(best[2]) + ',' + str(worst[2]) + ',' + str(mean_fit) + '\n')
     
 def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('data_name', metavar='data_name', type=str,
+        help='Name of training data file inside database folder')
+    parser.add_argument('-p', dest='population', default=50, type=int,
+        help='Population size for each generation')
+    parser.add_argument('-k', dest='k_tournament', default=2, type=int,
+        help='Number of individuals to participate in tournaments')
+    parser.add_argument('-g', dest='generations', default=10, type=int,
+        help='Number of generations')
+    parser.add_argument('-c', dest='prob_c', default=0.9, type=float,
+        help='Crossover probability')
+    parser.add_argument('-m', dest='prob_m', default=0.05, type=float,
+        help='Mutation propability')
+    
+    args = parser.parse_args()
+    
     gp = GeneticProgramming(
-        data_name=sys.argv[1],
-        population=sys.argv[2],
-        prob_c=sys.argv[3],
-        prob_m=sys.argv[4],
-        k=sys.argv[5],
-        max_depth=8
+        data_name=args.data_name,
+        population=args.population,
+        prob_c=args.prob_c,
+        prob_m=args.prob_m,
+        k=args.k_tournament,
+        max_depth=8,
+        generations=args.generations
         )
-    # gp = GeneticProgramming(
-    #     # data_name='keijzer7',
-    #     # data_name='keijzer10',
-    #     # data_name='synth1',
-    #     # data_name='synth2',
-    #     data_name='house',
-    #     # data_name='concrete',
-    #     population=50,
-    #     prob_c=0.50,
-    #     prob_m=0.50,
-    #     k=3,
-    #     max_depth=8
-    #     )
-    gp.loop(50)
+    gp.loop()
 
 if __name__ == '__main__':
     main()
