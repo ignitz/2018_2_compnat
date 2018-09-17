@@ -1,4 +1,4 @@
-
+"""Individual."""
 import hashlib as hl
 
 import numpy as np
@@ -7,11 +7,26 @@ from utils import print_blue
 
 
 class Node:
-    """
-    doc
-    """
+    """doc."""
+
     def __init__(self, node):
         self.children = node
+
+    def calc_fitness(self, data):
+        """Calculation of fitness by NRMSE."""
+        y_mean = data[:, -1].mean()
+        normalize = data[:, -1] - y_mean
+        normalize = np.sum(normalize)
+        real_diff = list()
+        for d in data:
+            eval_value = self.eval(d[:, :-1])
+            real_value = d[:, -1].item(0)
+            real_diff.append((eval_value - real_value)**2)
+        if float('inf') in real_diff:
+            return float('inf')
+        else:
+            return np.sqrt(np.sum(real_diff))
+            # return np.sqrt(np.sum(real_diff) / normalize)
 
     def eval(self, values):
         return self.children.eval(values)
@@ -23,7 +38,7 @@ class Node:
         return response
 
     def copy(self):
-        return Node(self.node.copy())
+        return Node(self.children.copy())
 
     def __str__(self):
         return self.children.__str__()
@@ -244,7 +259,7 @@ class Ln(Function):
             return np.log(eval_value)
 
     def copy(self):
-        return Sin(self.node.copy())
+        return Ln(self.node.copy())
 
     def __str__(self):
         if type(self.node) is Operator:
@@ -409,14 +424,16 @@ def test_print_and_operation():
 
 
 def test():
+    inds = []
+    inds.append(generate_individual(1))
+    inds.append(generate_individual(1))
+    inds.append(inds[1].copy())
+    for ind in inds:
+        print(ind.get_unique_id(), ind)
 
-    for i in range(5):
-        individual = generate_individual(2)
-        print(individual.get_unique_id(), individual)
-    # test_print_and_operation()
 
-# def main():
-#     test()
+def main():
+    test()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

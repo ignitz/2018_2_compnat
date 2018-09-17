@@ -1,3 +1,5 @@
+
+"""doc String."""
 import os
 # import sys
 # import argparse
@@ -7,70 +9,114 @@ from individual import Function, Node, Operator, \
 
 import numpy as np
 
-from utils import print_blue, print_green
+from utils import print_blue, print_green, print_warning, log
 
 DATASET_FOLDER = 'datasets'
-DATASET_NAMES = list()
+DEBUG=False
+
+def get_dataset_names():
+    return os.listdir(DATASET_FOLDER)
+
+def load_data(filename):
+    if DEBUG:
+        log('Read CSV data from', filename)
+
+    train_file = (DATASET_FOLDER + '/' +
+                  filename + '/' + filename + '-train.csv')
+    test_file = (DATASET_FOLDER + '/' +
+                 filename + '/' + filename + '-train.csv')
+
+    def read_file(filename):
+        aux_data = list()
+        with open(train_file, 'r') as f:
+            while True:
+                line = f.readline()
+                if len(line) == 0:
+                    break
+                aux_data.append(list(map(float, line.split(','))))
+        return np.matrix(aux_data)
+
+    train_data = read_file(train_file)
+    test_data = read_file(test_file)
+    if DEBUG:
+        log('Finish read CSV)',
+            '\nShape of train_data =', train_data.shape,
+            '\nShape of test_data  =', test_data.shape)
+    return train_data, test_data
 
 
 class GeneticProgramming(object):
 
-    def __init__(self, population=50, n_dim=1, depth=7):
+    def __init__(self,
+                 population=50,
+                 data_name='synth1',
+                 depth=7,
+                 k=2,
+                 prob_m=0.5,
+                 prob_c=0.5):
+        if DEBUG:
+            log('====================\n'
+                'GP initialization',
+                '\npopulation     =', population,
+                '\nDATABASE name  =', data_name,
+                '\ndepth of tree  =', depth,
+                '\n=-=-=-=-=-=-=-=-=-=-')
         self.population = population
-        self.n_dim = n_dim
         self.depth = depth
+        self.k = k
+        self.prob_m = prob_m
+        self.prob_c = prob_c
+        self.train_data, self.test_data = load_data(data_name)
+
+        if self.train_data.shape[1] != self.train_data.shape[1]:
+            raise 'Train and Test data are diff dimensions'
+
+        self.n_dim = self.train_data.shape[1] - 1
 
         self.individuals = list()
 
         for _ in range(population):
-            self.individuals.append(generate_individual(n_dim, depth))
+            self.individuals.append(generate_individual(self.n_dim, depth))
 
-    def calculate_fitness(self, ind, data):
-        """
-        NRMSE
-        """
-        y_mean = data[:, -1].mean()
-        normalize = data[:, -1] - y_mean
-        normalize = np.sum(normalize)
-        real_diff = list()
-        for data in data:
-            eval_value = ind.eval(data[:, :-1])
-            real_value = data[:, -1].item(0)
-            real_diff.append((eval_value - real_value)**2)
-        if float('inf') in real_diff:
-            return float('inf')
-        else:
-            return np.sqrt(np.sum(real_diff) / normalize)
+    def get_fitness(self):
+        if DEBUG:
+            log('Run get_fitness')
 
-    def fitness(self, train_data):
         nrmse_ind = list()
         index = 0
         for ind in self.individuals:
-            nrmse_ind.append([self.calculate_fitness(ind, train_data), index])
+            nrmse_ind.append([ind.calc_fitness(self.train_data), index])
             index += 1
         nrmse_ind.sort(key=lambda x: x[0])
         nrmse_ind = np.matrix(nrmse_ind)
         indexes_ord = nrmse_ind[:, 1].T.astype(int).tolist()[0]
 
         # reorder individuals by fitness
-        self.individuals = [self.individuals[i] for i in indexes_ord]
+        # self.individuals = [self.individuals[i] for i in indexes_ord]
 
-        return nrmse_ind[:, 0].T.tolist()
-
-    def reproduction(self):
-        pass
+        return nrmse_ind[:, 0].T.tolist(), indexes_ord
 
     def cross(self, choice1, choice2):
-        # print_warning('cross')
+        if DEBUG:
+            log(
+                '====================\n'
+                'Run cross',
+                '\nchoice1 =', choice1[1],
+                '\n\t parent1 =', choice1[0],
+                '\n\t depth1 =', choice1[3],
+                '\nchoice2 =', choice2[1],
+                '\n\t parent2 =', choice2[0],
+                '\n\t depth2 =', choice2[3],
+                '\n=-=-=-=-=-=-=-=-=-=-')
+
         parent1, node1, id1, _ = choice1
         parent2, node2, id2, _ = choice2
 
-        # print_warning(node1)
-        # print_warning(node2)
-
         if type(parent1) is Node:
+            if DEBUG: log('parent1 is Node')
             parent1.children = node2
         elif type(parent1) is Operator:
+            if DEBUG: log('parent1 is Operator')
             idleft = parent1.node_left.get_unique_id()
             idright = parent1.node_right.get_unique_id()
             if idleft == id1:
@@ -80,11 +126,14 @@ class GeneticProgramming(object):
             else:
                 raise 'Algo deu muito errado'
         elif isinstance(parent1, Function):
+            if DEBUG: log('Parent1 is Function')
             parent1.node = node2
 
         if type(parent2) is Node:
+            if DEBUG: log('parent2 is Node')
             parent2.children = node1
         elif type(parent2) is Operator:
+            if DEBUG: log('parent2 is Operator')
             idleft = parent2.node_left.get_unique_id()
             idright = parent2.node_right.get_unique_id()
             if idleft == id2:
@@ -94,53 +143,79 @@ class GeneticProgramming(object):
             else:
                 raise 'Algo deu muito errado'
         elif isinstance(parent2, Function):
+            if DEBUG: log('parent2 is Function')
             parent2.node = node1
 
-    def crossover(self, prob_c=0.5, k=2):
+    def crossover(self, ind1, ind2, prob=0.5):
         """
         Troca sub-arvores
         """
-        # print_warning('crossover')
-        indexes, inds = self.tournament(k)
-        ind1, ind2 = inds[:2]
+        if DEBUG:
+            log(
+                '====================\n'
+                'Run crossover',
+                '\nind1 =', ''.join([ind1.get_unique_id()[:5], '...']), ind1,
+                '\nind2 =', ''.join([ind2.get_unique_id()[:5], '...']), ind2,
+                '\n=-=-=-=-=-=-=-=-=-=-')
 
-        if np.random.random() < prob_c:
-            ind1_uniques = ind1.walk()
-            ind2_uniques = ind2.walk()
+        if np.random.random() < prob:
+            if DEBUG: log('True crossover')
+
+            ind1 = ind1.copy()
+            ind2 = ind2.copy()
+            ind_aux1 = ind1.copy()
+            ind_aux2 = ind2.copy()
+            ind1_uniques = ind_aux1.walk()
+            ind2_uniques = ind_aux2.walk()
 
             x = np.random.choice(list(range(len(ind1_uniques))))
             y = np.random.choice(list(range(len(ind2_uniques))))
             choice1 = ind1_uniques[x]
             choice2 = ind2_uniques[y]
             self.cross(choice1, choice2)
+            # TODO: select best
+            arr = []
+            arr.append([ind1, ind1.calc_fitness(self.train_data)])
+            arr.append([ind2, ind2.calc_fitness(self.train_data)])
+            arr.append([ind_aux1, ind_aux1.calc_fitness(self.train_data)])
+            arr.append([ind_aux2, ind_aux2.calc_fitness(self.train_data)])
+            arr.sort(key=lambda x: x[1])
 
-        return ind1, ind2
+            if DEBUG: log('result:', arr[0][0], arr[1][0])
+            return arr[0][0], arr[1][0]
 
-    def tournament(self, many=2):
+        return ind1.copy(), ind2.copy()
+
+    def tournament(self, k=2):
         """
-        Espera-se que a fitness já foi calculada a espera que os individuos
-        já estejam ordernados
-        retorna com individuos por ordem de fitness
         """
         # print_warning('tour')
-        possible_choices = list(range(0, self.population))
-        choices = list()
-        for _ in range(many):
-            choice = possible_choices.pop(
-                np.random.random_integers(0, len(possible_choices) - 1))
-            choices.append(choice)
-        choices.sort()
-        return choices, [self.individuals[i] for i in choices]
+        n = len(self.individuals)
+        possible_choices = list(range(0, n))
+        np.random.shuffle(possible_choices)
+        choices = possible_choices[:k]
+        arr = []
+        for choice in choices:
+            ind = self.individuals[choice]
+            fitness = self.individuals[choice].calc_fitness(self.train_data)
+            arr += [[fitness, ind]]
 
-    def mutation(self, prob_mut=0.5, k=2):
-        # print_warning('mutation')
-        indexes, inds = self.tournament(k)
-        ind = inds[0]
+        arr.sort(key=lambda x: x[0])
+        return arr[0][1]
 
-        if np.random.random() < prob_mut:
-            # print(ind)
+    def mutation(self, ind, prob=0.5):
+        if DEBUG:
+            log(
+                '====================\n'
+                'Run mutation',
+                '\nind =', ''.join([ind.get_unique_id()[:5], '...']), ind,
+                '\n=-=-=-=-=-=-=-=-=-=-')
 
-            ind_uniques = ind.walk()
+        if np.random.random() < prob:
+            if DEBUG: log('True mutation')
+
+            ind_aux = ind.copy()
+            ind_uniques = ind_aux.walk()
             x = np.random.choice(list(range(len(ind_uniques))))
             choice1 = ind_uniques[x]
 
@@ -171,82 +246,71 @@ class GeneticProgramming(object):
 
             # print_warning(ind)
             # self.show_ind()
-        return ind
+            # Escolher o melhor
+            fit_1 = ind_aux.calc_fitness(self.train_data)
+            fit_2 = ind.calc_fitness(self.train_data)
+            if DEBUG: log('result:', ind_aux)
+            return ind_aux if fit_1 < fit_2 else ind.copy()
+        return ind.copy()
 
-    def new_population(self, choosen_inds=[]):
-        # print_warning('newpop')
-        self.individuals = choosen_inds
-        for i in range(self.population - len(choosen_inds)):
-            # TODO: pais e filhos (nao do Renato Russo)
-            self.individuals.append(
-                generate_individual(self.n_dim, self.depth))
+    def new_population(self):
+        if DEBUG:
+            log(
+                '====================\n'
+                'Run new_population',
+                '=-=-=-=-=-=-=-=-=-=-')
+
+        new_inds = []
+
+        while len(new_inds) <= self.population:
+            choose = np.random.random_integers(0, 1)
+            if choose == 0:
+                # Mutation
+                ind = self.tournament(k=self.k)
+                ind = self.mutation(ind, prob=self.prob_m)
+                new_inds += [ind]
+            elif choose == 1:
+                # Crossover
+                ind1 = self.tournament(k=self.k)
+                ind2 = self.tournament(k=self.k)
+                ind1, ind2 = self.crossover(ind1, ind2, prob=self.prob_c)
+                new_inds += [ind1, ind2]
+            # elif choose == 2:
+                # Reproduction
+            else:
+                ind = generate_individual(self.n_dim, depth=self.depth)
+                new_inds += [ind]
+
+        self.individuals = new_inds
 
     def show_ind(self):
+        """
+        Show all individuals
+        DEBUG purpose
+        """
         print_green('Unique ID (SHA256)\tExpression')
         for ind in self.individuals:
             print_blue(str(ind.get_unique_id())[:13] + '...\t' + ind.__str__())
 
 
-def read_csv(filename):
-    train_data = np.matrix([])
-    test_data = np.matrix([])
-    train_file = (DATASET_FOLDER + '/' +
-                  filename + '/' + filename + '-train.csv')
-    test_file = (DATASET_FOLDER + '/' +
-                 filename + '/' + filename + '-train.csv')
-
-    def read_file(filename):
-        aux_data = list()
-        with open(train_file, 'r') as f:
-            while True:
-                line = f.readline()
-                if len(line) == 0:
-                    break
-                aux_data.append(list(map(float, line.split(','))))
-        return np.matrix(aux_data)
-
-    train_data = read_file(train_file)
-    test_data = read_file(test_file)
-    return train_data, test_data
-
-
-def search_dataset_names():
-    names = os.listdir(DATASET_FOLDER)
-    for name in names:
-        DATASET_NAMES.append(name)
-
-
 def main():
-    search_dataset_names()
-    train_data, test_data = read_csv(DATASET_NAMES[2])
-
-    # description = "Genetic Programming using math expression trees"
-    # parser = argparse.ArgumentParser(description=description)
-    # parser.add_argument('population', type=int, help="number
-    # of individuals per epoch", default=50)
-    # args = parser.parse_args()
-    # GeneticProgramming(population=args.population, )
-    gp = GeneticProgramming(population=50,
-                            n_dim=train_data.shape[1] - 1, depth=7)
-    gp.fitness(train_data)
-
+    gp = GeneticProgramming(population=25, depth=7, prob_c=1.0, prob_m=1.0)
+    
     count = 0
     while True:
-        choosen_inds = list()
-        x, y = gp.crossover(prob_c=1.0, k=3)
-        choosen_inds.append(x)
-        choosen_inds.append(y)
-        x = gp.mutation(prob_mut=1.0, k=3)
-        choosen_inds.append(x)
-        gp.new_population(choosen_inds)
-        best = gp.fitness(train_data)[0]
-        print_blue(gp.individuals[0])
-        print(best[0])
-        count += 1
-        if count == 50:
+        print('Generation', count + 1)
+        count+=1
+        if count == 500:
             break
+        gp.new_population()
+        print(gp.get_fitness()[0][0][0])
+        # for i in range(5):
+        #     print(gp.individuals[i])
+        #     print(gp.individuals[i].calc_fitness(gp.train_data))
 
     gp.show_ind()
+
+    print(gp.individuals[0], gp.individuals[0].calc_fitness(gp.train_data))
 
 
 if __name__ == '__main__':

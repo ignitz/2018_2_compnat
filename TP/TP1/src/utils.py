@@ -13,22 +13,22 @@ Abaixo contém funções para imprimir com cor no terminal
 Alguns tem como propósito de DEBUG
 """
 def print_purple(msg, end=None):
-	if end is None:
-		print(CYAN + str(msg) + ENDC)
-	else:
-		print(CYAN + str(msg) + ENDC, end=end)
+    if end is None:
+        print(CYAN + str(msg) + ENDC)
+    else:
+        print(CYAN + str(msg) + ENDC, end=end)
 
 def print_blue(msg, end=None):
-	if end is None:
-		print(BLUE + str(msg) + ENDC)
-	else:
-		print(BLUE + str(msg) + ENDC, end=end)
+    if end is None:
+        print(BLUE + str(msg) + ENDC)
+    else:
+        print(BLUE + str(msg) + ENDC, end=end)
 
 def print_green(msg, end=None):
-	if end is None:
-		print(GREEN + str(msg) + ENDC)
-	else:
-		print(GREEN + str(msg) + ENDC, end=end)
+    if end is None:
+        print(GREEN + str(msg) + ENDC)
+    else:
+        print(GREEN + str(msg) + ENDC, end=end)
 
 def print_bold(msg, end=None):
     if end is None:
@@ -44,7 +44,12 @@ def print_warning(msg, end=None):
 
 # print errors in RED
 def print_error(msg, end=None):
-	if end is None:
-		print(FAIL + str(msg) + ENDC)
-	else:
-		print(FAIL + str(msg) + ENDC, end=end)
+    if end is None:
+        print(FAIL + str(msg) + ENDC)
+    else:
+        print(FAIL + str(msg) + ENDC, end=end)
+
+def log(*msg):
+    print('\033[93m', end='')
+    print(*msg)
+    print('\033[0m', end='')
