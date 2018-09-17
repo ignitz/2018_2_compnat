@@ -1,3 +1,4 @@
+
 # Colorir letras. Testado apenas no Linux.
 CYAN = '\033[95m'
 BLUE = '\033[94m'

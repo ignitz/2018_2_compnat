@@ -12,11 +12,8 @@ class Node:
     def __init__(self, node):
         self.children = node
 
-    def calc_fitness(self, data):
+    def calc_fitness(self, data, normalize):
         """Calculation of fitness by NRMSE."""
-        y_mean = data[:, -1].mean()
-        normalize = data[:, -1] - y_mean
-        normalize = np.sum(normalize)
         real_diff = list()
         for d in data:
             eval_value = self.eval(d[:, :-1])
@@ -25,8 +22,8 @@ class Node:
         if float('inf') in real_diff:
             return float('inf')
         else:
-            return np.sqrt(np.sum(real_diff))
-            # return np.sqrt(np.sum(real_diff) / normalize)
+            # return np.sqrt(np.sum(real_diff))
+            return np.sqrt(np.sum(real_diff) / normalize)
 
     def eval(self, values):
         return self.children.eval(values)
@@ -253,8 +250,10 @@ class Ln(Function):
     """
     def eval(self, values):
         eval_value = self.node.eval(values)
-        if eval_value <= 0.0:
+        if eval_value < 0.0:
             return float('inf')
+        elif eval_value == 0.0:
+            return 0.0
         else:
             return np.log(eval_value)
 
@@ -383,57 +382,3 @@ def generate_subtree(n_dim, depth):
 def generate_individual(n_dim, depth=7):
     return Node(generate_subtree(n_dim, depth))
 
-
-def test_basic_operations():
-    x1 = Variable(0)
-    x2 = Variable(1)
-    values = np.array([1.0, 0.0])
-    print(x1.eval(values), x2.eval(values))
-    node = Operator('add', x1, x2)
-    print(node.eval(values))
-    node = Operator('sub', x1, x2)
-    print(node.eval(values))
-    node = Operator('mul', x1, x2)
-    print(node.eval(values))
-    node = Operator('div', x1, x2)
-    print(node.eval(values))
-
-
-def test_functions():
-    sin = Sin(0)
-    cos = Cos(0)
-    exp = Exp(0)
-    ln = Ln(0)
-    for x in range(-10, 105, 5):
-        values = [x / 10]
-        print_blue("Sin(" + str(values[0]) + ") = " + str(sin.eval(values)))
-        print_blue("Cos(" + str(values[0]) + ") = " + str(cos.eval(values)))
-        print_blue("E(" + str(values[0]) + ") = " + str(exp.eval(values)))
-        print_blue("LN(" + str(values[0]) + ") = " + str(ln.eval(values)))
-
-
-def test_print_and_operation():
-    a = Constant(1)
-    b = Constant(2)
-    foo = Operator('add', a, b)
-    print(foo)
-    a = Ln(0)
-    b = Cos(1)
-    bar = Operator('+', a, b)
-    print(bar, ' = ', np.around(bar.eval([np.pi / 2, 0]), decimals=2))
-
-
-def test():
-    inds = []
-    inds.append(generate_individual(1))
-    inds.append(generate_individual(1))
-    inds.append(inds[1].copy())
-    for ind in inds:
-        print(ind.get_unique_id(), ind)
-
-
-def main():
-    test()
-
-if __name__ == '__main__':
-    main()
