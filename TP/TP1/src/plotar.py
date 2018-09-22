@@ -38,6 +38,7 @@ def load_data(dataname, p, g, k, c, m):
 def main():
     EIXOS = [0, 55, 0, 1.5]
 
+<<<<<<< HEAD
     # fig, ax = plt.subplots()
 
     # for x in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
@@ -106,14 +107,68 @@ def main():
         ax.plot(np.arange(0, generations + 1, 1), data[:,2][:], 'o', label=label)
 
     title = 'Variação da população'
+=======
+    fig, ax = plt.subplots()
+
+    for x in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
+        generations = 50
+        data = load_data('synth1', 50, generations, 2, x, 0.05)
+        label = 'P(cross) = ' + str(x)
+        ax.plot(np.arange(0, generations + 1, 1), data[:,2][:], 'o', label=label)
+
+    title = 'Variação do Crossover'
     ax.set(xlabel='Gerações', ylabel='Fitness médio',
            title=title)
     ax.axis(EIXOS)
     ax.legend()
     ax.grid()
 
+    fig.savefig("varcrossover.pdf")
+    # plt.show()
+
+    # AAAAAAAAAAAAAAAAA
+    fig, ax = plt.subplots()
+
+    for x in [0.05, 0.1, 0.3, 0.5, 0.7, 0.9]:
+        generations = 50
+        data = load_data('synth1', 50, generations, 2, 0.05, x)
+        label = 'P(mut) = ' + str(x)
+        ax.plot(np.arange(0, generations + 1, 1), data[:,2][:], 'o', label=label)
+
+    title = 'Variação da Mutação'
+    ax.set(xlabel='Gerações', ylabel='Fitness médio',
+           title=title)
+    ax.axis(EIXOS)
+    ax.legend()
+    ax.grid()
+
+    fig.savefig("varmutation.pdf")
+    # plt.show()
+
+    # AAAAAAAAAAAAAAAAA
+    fig, ax = plt.subplots()
+
+    for x in [2,3,4,5,6,7]:
+        generations = 50
+        data = load_data('synth1', 50, generations, x, 0.3, 0.6)
+        label = 'k = ' + str(x)
+        ax.plot(np.arange(0, generations + 1, 1), data[:,2][:], 'o', label=label)
+
+    title = 'Variação da K'
+>>>>>>> master
+    ax.set(xlabel='Gerações', ylabel='Fitness médio',
+           title=title)
+    ax.axis(EIXOS)
+    ax.legend()
+    ax.grid()
+
+<<<<<<< HEAD
     fig.savefig("img/populations.pdf")
     plt.show()
+=======
+    fig.savefig("varK.pdf")
+    # plt.show()
+>>>>>>> master
 
 
     # merge data
