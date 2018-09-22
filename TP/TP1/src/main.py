@@ -125,10 +125,10 @@ class GeneticProgramming:
         output_filename += 'm' + str(self.prob_m) + '_'
         count = 1
         while True:
-            if os.path.exists(os.getcwd() + '/'+ output_filename + f"{count:03}" + '.csv'):
+            if os.path.exists(os.getcwd() + '/'+ output_filename + str(count).zfill(3) + '.csv'):
                 count+=1
             else:
-                output_filename += f"{count:03}"
+                output_filename += str(count).zfill(3)
                 break
         self.output_data_filename = output_filename + '.csv'
         self.output_filename = output_filename + '.txt'

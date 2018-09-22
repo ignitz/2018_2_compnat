@@ -1,0 +1,40 @@
+\section{Conclusão}
+
+Neste trabalho percebemos percebemos o impacto que cada trabalho proporcionado tanto pela vantagem quanto pelo efeito colateral pelo mesmo.
+Por exemplo, as operações de soma e multiplicação diminuem conforme a profundidade da árvore e a translação da variável segue uma normal padrão para concentrar o valor da dimensão em zero.
+
+
+Pelo fato de saber que os dados obedecem uma função comportada (\textit{SPOILER}), a geração de árvores tendem para estas funções tentando evitar funções extremamente compostas.
+As ferramentas de eliminar indivíduos repetidos e \textit{fitness sharing} não foram implementadas pois não era o objetivo direto do trabalho (e medo de aparecer uns bugzinhos). Mas  se forem implementados, o erro de \textit{fitness} médio provavelmente melhoraria pois melhoraria a variabilidade forçaria para convergência da função original da base de dados. 
+
+
+\newpage
+\section{Execução do programa}
+
+O trabalho prático foi executado no \textbf{Python 3.6.5} e o \textbf{NumPy 11.14.3} do ambiente base do Anaconda. O único pacote extra que foi utilizo fora do ambiente \textit{Vanilla} é o \textit{numpy}. O restante dos componentes utilizados na estrutura de dados foram o básico proporcionado pela linguagem.
+
+Se executado o programa sem a base de dados enviado como parâmetros, será mostrado o \textit{help} do programa informando como deve ser enviado os parâmetros.
+
+\begin{lstlisting}
+usage: main.py [-h] [-p POPULATION]
+               [-k K_TOURNAMENT]
+               [-g GENERATIONS]
+               [-c PROB_C] [-m PROB_M]
+               data_name
+\end{lstlisting}
+
+A saída dos dados são gravados no diretório \textbf{output} em um arquivo \textbf{.csv} contendo em cada linha:
+
+\begin{itemize}
+	\item O melhor \textit{fitness} da geração.
+	\item O pior \textit{fitness} da geração.
+	\item O \textit{fitness} médio da geração. (ignorando \textit{fitness} contendo \textbf{inf} \textbf{nan})
+\end{itemize}
+
+Sendo que a última linha é o resultado baseados nos dados de testes.
+
+Outro arquivo de saída \textbf{.txt} é informações geradas de cada informação gerada pelo arquivo contidos no \textbf{csv} mais melhores indivíduos, mostrando a expressão da árvore, e prefixo dos IDs únicos de cada indivíduo.
+
+\section{Referências}
+
+As referências utilizadas foram dos slides da aula.
