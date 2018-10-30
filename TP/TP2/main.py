@@ -45,6 +45,7 @@ class ThreadPool:
         self.tasks.join()
 
 DATASET_NAMES=["graph1.txt", "graph2.txt", "graph3.txt"]
+# DATASET_NAMES=["test.txt"]
 
 def main():
     ANTS_NUM = [50, 100, 200, 1000]
@@ -53,6 +54,13 @@ def main():
     ALPHA = [0.1, 0.5, 1.0, 2.0]
     BETA = [0.1, 0.5, 1.0, 2.0]
     K_ANTS = [0, 1, 5, 10, 15]
+
+    #ANTS_NUM = [50]
+    #IT_NUM = [100]
+    #SIGMA = [0.9]
+    #ALPHA = [1.0, 2.0]
+    #BETA = [1.0, 2.0]
+    #K_ANTS = [5]
 
     pool = ThreadPool(4)
     for ants_num in ANTS_NUM:

@@ -304,15 +304,15 @@ class AntColony(nx.DiGraph):
         self.update_probs()
         self.evaporate_pheromones()
         # self.print_ants(self.k_ants)
-        # self.print_fitness_stat()
+        self.print_fitness_stat()
         # self.print_pheromones()
     
     def print_ants(self, n=None):
         self.ants.sort(key=lambda x: x.fitness, reverse=True)
         
         print('------------------------------\nAnts\n------------------------------')
-        # for ant in self.ants[:n]:
-        #     print(ant.fitness, ant.path)
+        for ant in self.ants[:n]:
+            print(ant.fitness, ant.path)
 
     def print_fitness_stat(self):
 
@@ -332,23 +332,4 @@ class AntColony(nx.DiGraph):
             content = str(max_fitness) + ';' + str(min_fitness) + ';' + \
                       str(mean_fitness) + ';' + str(var_fitness) + '\n'
             w.write(content)
-
-        # print(max_fitness, '\t', min_fitness, '\t', mean_fitness, '\t', var_fitness)
-    
-    def print_pheromones(self):
-        count = 1 
-        for u in self.nodes():
-            for v in self.neighbors(u):
-                if self[u][v]['t_xy'] > 1.0:
-                    print("t({}, {}) = {}".format(u, v, round(self[u][v]['t_xy'], 2)), end="")
-                    print("") if count % 4 == 0 else print("\t", end="")
-                    count += 1
-
-
-
-def main():
-    # from main import read_dataset
-    pass
-
-if __name__ == '__main__':
-    main()
+        print('\t'.join(content.split(';')))
