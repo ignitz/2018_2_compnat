@@ -1,6 +1,7 @@
+import itertools
+import sys
 from queue import Queue
 from threading import Thread
-
 from antcolony import AntColony
 
 class Worker(Thread):
@@ -47,7 +48,7 @@ class ThreadPool:
 DATASET_NAMES=["graph1.txt", "graph2.txt", "graph3.txt"]
 # DATASET_NAMES=["test.txt"]
 
-def main():
+def collect_results(graph_number):
     ANTS_NUM = [50, 100, 200, 1000]
     IT_NUM = [100]
     SIGMA = [0.1, 0.3, 0.5, 0.7, 0.9]
@@ -62,23 +63,31 @@ def main():
     #BETA = [1.0, 2.0]
     #K_ANTS = [5]
 
-    pool = ThreadPool(4)
-    for ants_num in ANTS_NUM:
-        for it_num in IT_NUM:
-            for sigma in SIGMA:
-                for alpha in ALPHA:
-                    for beta in BETA:
-                        for k_ants in K_ANTS:
-                            for dname in DATASET_NAMES:
-                                aco = AntColony(dname,
-                                                ants_num=ants_num,
-                                                it_num=it_num,
-                                                sigma=sigma,
-                                                alpha=alpha,
-                                                beta=beta,
-                                                k_ants=k_ants)
-                                pool.add_task(aco.flux_colony)
-                pool.wait_completion()
-    
+    # pool = ThreadPool(4)
+    for ants_num, it_num, sigma, alpha, beta, k_ants in list(
+        itertools.product(ANTS_NUM,
+                          IT_NUM,
+                          SIGMA,
+                          ALPHA,
+                          BETA,
+                          K_ANTS)):
+                    aco = AntColony(DATASET_NAMES[graph_number],
+                                    ants_num=ants_num,
+                                    it_num=it_num,
+                                    sigma=sigma,
+                                    alpha=alpha,
+                                    beta=beta,
+                                    k_ants=k_ants)
+                    if aco.already_exists:
+                        continue
+                    aco.flux_colony()
+                    # pool.add_task(aco.flux_colony)
+    # pool.wait_completion()
+
+
+def main():
+    collect_results(int(sys.argv[1]))
+
+
 if __name__ == '__main__':
     main()

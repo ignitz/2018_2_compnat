@@ -81,7 +81,7 @@ class AntColony(nx.DiGraph):
 
         count = 1
         dataset_name = dataset_file.split('.')[0]
-        while os.path.exists(OUTPUT_FOLDER + \
+        if os.path.exists(OUTPUT_FOLDER + \
                              dataset_name + '_' + \
                              str(self.it_num) +'_' + \
                              str(self.ants_num) +'_' + \
@@ -95,7 +95,22 @@ class AntColony(nx.DiGraph):
                              hostname + '_' + \
                              str(count).zfill(3) + \
                              '.csv'):
-            count += 1
+            self.already_exists = True
+            print(dataset_name + '_' + \
+                  str(self.it_num) +'_' + \
+                  str(self.ants_num) +'_' + \
+                  str(self.origin) +'_' + \
+                  str(self.dest) +'_' + \
+                  str(self.alpha) +'_' + \
+                  str(self.beta) +'_' + \
+                  str(self.sigma) +'_' + \
+                  str(init_phero) +'_' + \
+                  str(self.k_ants) +'_' + \
+                  hostname + '_' + \
+                  str(count).zfill(3) + \
+                  '.csv')
+            return
+        self.already_exists = False
         
         self.out_filename = '/tmp/' + dataset_name + '_' + \
                              str(self.it_num) +'_' + \
@@ -321,7 +336,8 @@ class AntColony(nx.DiGraph):
 
         for ant in self.ants:
             fitness.append(ant.fitness)
-            
+
+        print('==============================\n' + self.out_final_filename)    
         print('------------------------------\nMax, Min, Mean\n------------------------------')
         max_fitness = np.max(fitness)
         min_fitness = np.min(fitness)
