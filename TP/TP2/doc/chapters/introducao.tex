@@ -1,0 +1,19 @@
+\section{Introdução}
+
+O objetivo desse trabalho é desenvolver conceitos chaves para construções de soluções para
+problemas usando Ant Colony Optimization (ACO), envolvendo o entendimento e a implementação
+dos componentes básicos de um arcabouço de ACO, bem como a análise de sensibilidade dos seus
+parâmetros (como eles afetam o resultado final, a natureza de convergência,
+etc) e procedimentos para avaliação das soluções alcançadas. Para esse trabalho, vocês devem
+elaborar soluções para o problema conhecido como \textbf{longest path problem}.
+
+Dado um grafo $G(V, E)$, uma função $w : E \rightarrow R$ que atribui pesos a cada aresta e dois vértices $u, v \in V$ ,
+denotaremos como $\mathcal{P}$ o conjunto de caminhos simples partindo de $u$ e chegando em $v$.
+O problema consiste então em encontrar
+$P^* = \{e_1^*, e_2^*, \dots, e_k^*\}$
+tal que
+
+$$P^* = \arg \max\limits_{P \in \mathcal{P}} \sum\limits_{e_i \in P} w(e_i)$$
+
+Ou seja, queremos encontrar o caminho simples de $u$ a $v$ que maximize o peso total do
+caminho.

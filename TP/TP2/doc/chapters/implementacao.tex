@@ -1,0 +1,46 @@
+\section{Implementação}
+
+O ACO foi modelado utilizando as principais bibliotecas:
+
+\begin{itemize}
+	\item \textbf{numpy}
+	\item \textbf{networkx}: biblioteca para grafos
+\end{itemize}
+
+As bibliotecas instaladas, via \textbf{pip}, pelo \textbf{virtual-env} encontra-se
+no arquivo \textbf{req.txt}.
+
+\subsection{Grafo}
+
+Seja o grafo $G(V, E)$, definimos baseado na especificação.
+
+\begin{itemize}
+	\item O grafo $G$ é direcionado.
+	\item Cara aresta do grafo contém, como atributo, pesos dados como entrada, a taxa de feromônio $t_{xy}$ e a probabilidade
+	da formiga escolher a aresta $p_{xy}$ que é atualizado no final de cada iteração. Sendo $xy$ a direção da aresta do nó $x$ a $y$.
+	\item Como o custo de encontrar um caminho entre os nós $u$ e $v$ é caro, assumimos que existe um caminho simples. Caso contrário,
+	entrará em loop infinito. Isto não acontece com os \textit{datasets} \textbf{graph1}, \textbf{graph2} e \textbf{graph3}.
+\end{itemize}
+
+\subsection{Fluxo}
+
+a iteração fica  
+encontrar caminho das formigas  
+armazenar os valores dos feromonios  
+update pheromone  
+evaporate pheromones  
+
+INSERIR DESENHO
+
+\subsection{Atualização Feromônio}
+
+% self[u][v]['t_xy'] += (ant.fitness + 0.5 - ant.pheromone[i][2]) / max_pher
+%                 # self[u][v]['t_xy'] += 1.0 - 1.0 / ant.fitness
+% 								self[u][v]['t_xy'] = min(self[u][v]['t_xy'], 100.0)
+
+
+
+$$t_{xy} \leftarrow \frac{fitness_k - pheromone_{xy} + 0.5}{\max \forall fitness}$$
+
+Assim o feromônio é mais forte no início do caminho e fica mais fraco ao final. Isto ajuda
+a criar mais caminhos com o prefixo do melhor caminho e tentar variar nas arestas posteriores.

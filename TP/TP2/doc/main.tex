@@ -1,0 +1,48 @@
+\documentclass[journal]{IEEEtran}
+\usepackage[utf8]{inputenc}
+
+%\usepackage[retainorgcmds]{IEEEtrantools}
+%\usepackage{bibentry}  
+\usepackage{xcolor,soul,framed} %,caption
+
+\colorlet{shadecolor}{yellow}
+% \usepackage{color,soul}
+\usepackage[pdftex]{graphicx}
+\graphicspath{{../pdf/}{../jpeg/}}
+\DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+%Mathabx do not work on ScribTex => Removed
+%\usepackage{mathabx}
+\usepackage{array}
+\usepackage{mdwmath}
+\usepackage{mdwtab}
+\usepackage{eqparbox}
+\usepackage{url}
+
+% \usepackage{hyperref}
+
+\usepackage{float}
+\usepackage{listings}
+
+%\bstctlcite{IEEE:BSTcontrol}
+\newcommand{\R}{\mathbb{R}}
+
+%=== TITLE & AUTHORS ====================================================================
+\begin{document}
+  \title{TP2 - Ant Colony Optimization (ACO)\\
+  Longest Path} 
+  \author{Yuri Niitsuma}
+
+\maketitle
+
+% \input{chapters/abstract.tex}
+\input{chapters/introducao.tex}
+\input{chapters/implementacao.tex}
+% \input{chapters/experimentos.tex}
+% \input{chapters/conclusao.tex}
+
+\end{document}
+
+
