@@ -1,8 +1,207 @@
 \section{Experimentos}
 
-foobar
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=0.5\textwidth]{pdf/varcrossover.pdf}
-%   \label{fig:varcross}
-% \end{figure}
+O código foi executado com diferentes parâmetros para \textbf{graph1} e \textbf{graph2}.
+Foram eles:
+\begin{itemize}
+  \item nº de formigas = $\{ 50,100,200,1000\}$
+  \item iterações = $\{ 100\}$ 
+  \item $\sigma$ = $\{ 0.1,0.3,0.5,0.7,0.9\}$
+  \item $\alpha$ = $\{ 0.1,0.5,1.0,2.0\}$
+  \item $\beta$ = $\{ 0.1,0.5,1.0,2.0\}$
+  \item elitismo = $\{ 0,1,5,10,15\}$
+\end{itemize}
+
+Todos os dados dos experimentos estão disponíveis no:
+
+\url{https://homepages.dcc.ufmg.br/~yuriniitsuma/natcomp/}
+
+\begin{itemize}
+  \item \textbf{out.tar.gz} contendo as saídas com cada combinação de parâmetros.  
+  \item \textbf{All\_plots.pdf} contendo todos os gráficos (3252) de todos os experimentos.  
+  Cada gráfico é a média das saídas de cada combinação dos parâmetros.
+\end{itemize}
+
+No gráfico cada representa:
+
+\begin{itemize}
+  \item \textbf{Azul}: melhor fitness
+  \item \textbf{Verde}: média das fitness
+  \item \textbf{Laranja}: pior fitness
+  \item \textbf{Vermelha}: solução ótima
+\end{itemize}
+
+Destacarei os gráficos que representam as análises mais significantes do experimento.
+
+\subsection{\textbf{graph2}}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_50_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\subsection*{Variação da quantidade de formigas}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_200_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_1000_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+Percebe-se um efeito colateral dado a quantidade de formigas excessivas, pois os caminhos são aleatórios tendo uma pequena chance
+da convergência ser muito lenta. Manteremos $100$ formigas e analisaremos a variação de $\alpha$.
+
+\subsection*{Variação de $\alpha$}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_0.1_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_0.5_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_2.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+Verificamos que aumenta a taxa de convergência, mas um valor maior aumenta a convergência prematura.  
+
+\subsection*{Variação de $\beta$}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_0.1_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_0.5_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_2.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+Tem efeitos mais significativos mas não foi encontrado ainda um efeito colateral. Vamos agora variar a evaporação.
+
+\subsection*{Variação de $\sigma$}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.1_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.3_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.5_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.7_Elitism_0.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.9_Elitism_0.pdf}
+\end{figure}
+
+Aqui percebe-se um bom ganho das soluções mas que valores muito alto possui efeito colateral que forçam
+as melhores soluções e a pior convergirem para a média fazendo um efeito sanduiche. Agora vamos analisar
+o efeito do parâmetro de elitismo.
+
+\subsection*{Variação do parâmetro de elitismo}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.7_Elitism_1.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.7_Elitism_5.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.7_Elitism_10.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph2_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_1.0_Sigma_0.7_Elitism_15.pdf}
+\end{figure}
+
+Percebe-se que a melhor solução converge junto com a média mas ainda mantém alguma variabilidade.
+
+\subsection{\textbf{graph1}}
+
+No \textit{graph1} percebemos que o parâmetro $\sigma$ é o mais significativo, talvez por alguma característica no grafo.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph1_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_0.5_Sigma_0.9_Elitism_10.pdf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph1_Iterations_100_NumberOfAnts_100_Alpha_1.0_Beta_0.5_Sigma_0.3_Elitism_10.pdf}
+\end{figure}
+
+Valores muitos altos de evaporação ocasionam numa maior variabilidade talvez pela quantidade alta de arestas
+afetam algum efeito de inanição e a aresta acaba sendo inutilizado.
+
+\subsection{\textbf{graph3}}
+
+No \textbf{graph3}, os parâmetros que influenciaram na melhor solução foi $\beta$ e a quantidade máxima de formigas
+pelo fato do grafo ser mais esparso que os dois anteriores.
+
+As melhores soluções, da melhor formiga, foram:
+
+\[\{ 9786.16,9778.75,9773.58\} \]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph3_Iterations_100_NumberOfAnts_50_Alpha_1.0_Beta_2.0_Sigma_0.1_Elitism_1.pdf}
+  \caption{9786.16}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph3_Iterations_100_NumberOfAnts_1000_Alpha_2.0_Beta_2.0_Sigma_0.9_Elitism_10.pdf}
+  \caption{9778.75}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{../img/graph3_Iterations_100_NumberOfAnts_50_Alpha_1.0_Beta_2.0_Sigma_0.1_Elitism_0.pdf}
+  \caption{9773.58}
+\end{figure}

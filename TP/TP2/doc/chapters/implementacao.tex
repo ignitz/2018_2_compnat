@@ -10,6 +10,11 @@ O ACO foi modelado utilizando as principais bibliotecas:
 As bibliotecas instaladas, via \textbf{pip}, pelo \textbf{virtual-env} encontra-se
 no arquivo \textbf{req.txt}.
 
+Possui características de um ACO clássico do problema do caixeiro viajante.
+A única diferênça ao modelo deste trabalho é a atratividade do caminho $\eta_{xy}$
+e taxa de depósito de feromônio nas arestas $\Delta\tau_{xy}^k$ que serão
+descritos nas seções a seguir. 
+
 \subsection{Grafo}
 
 Seja o grafo $G(V, E)$, definimos baseado na especificação.
@@ -17,30 +22,59 @@ Seja o grafo $G(V, E)$, definimos baseado na especificação.
 \begin{itemize}
 	\item O grafo $G$ é direcionado.
 	\item Cara aresta do grafo contém, como atributo, pesos dados como entrada, a taxa de feromônio $t_{xy}$ e a probabilidade
-	da formiga escolher a aresta $p_{xy}$ que é atualizado no final de cada iteração. Sendo $xy$ a direção da aresta do nó $x$ a $y$.
-	\item Como o custo de encontrar um caminho entre os nós $u$ e $v$ é caro, assumimos que existe um caminho simples. Caso contrário,
-	entrará em loop infinito. Isto não acontece com os \textit{datasets} \textbf{graph1}, \textbf{graph2} e \textbf{graph3}.
+	da formiga escolher a aresta $p_{xy}$ que é atualizado no final de cada iteração.  
+    Sendo $xy$ a direção da aresta do nó $x$ a $y$.
+    \item A taxa de feromônio inicial das arestas é $0.1$.
+	\item Como o custo de encontrar um caminho entre os nós $u$ e $v$ é caro, assumimos que sempre existe um caminho simples do nó $1$ ao $n$.
+    Caso contrário,
+    entrará em loop infinito. Isto não acontece com os \textit{datasets} \textbf{graph1}, \textbf{graph2} e \textbf{graph3}.
+    \item O algoritmo não gera soluções inválidas, se o caminho gerado for inválido, a formiga é descartada e gerada novamente.
 \end{itemize}
 
-\subsection{Fluxo}
+\subsection{Elitismo}
 
-a iteração fica  
-encontrar caminho das formigas  
-armazenar os valores dos feromonios  
-update pheromone  
-evaporate pheromones  
+Foi utilizado um parâmetro de elitismo que mantém os $k$ melhores formigas/caminhos
+para a próxima iteração.
 
-INSERIR DESENHO
+\subsection{Escolha da Aresta}
+
+A formiga escolhe a aresta $xy$ pela seguinte fórmula de probabilidade.
+
+$$p_{xy} = \frac{(\tau_{xy})^\alpha(\eta_{xy})^\beta}{\sum\limits_{e_{xj} \in E} (\tau_{xj})^\alpha(\eta_{xj})^\beta }$$
+
+O denominador representa a soma entre todas as arestas vizinhas e $x$.
+
+O termo $\eta_{xy}$ representa a atratividade do caminho e foi definido no modelo como ${\eta _{xy}} = w(x,y)$ em que $w$ é peso da aresta do nó $x$ para $y$.
+
+\subsection{Fitness}
+
+A fitness da formiga é o custo do caminho do vértice $1$ a $n$.
+
+$$fit(P^k) = \sum\limits_{i} w(e_i^k)$$
 
 \subsection{Atualização Feromônio}
 
-% self[u][v]['t_xy'] += (ant.fitness + 0.5 - ant.pheromone[i][2]) / max_pher
-%                 # self[u][v]['t_xy'] += 1.0 - 1.0 / ant.fitness
-% 								self[u][v]['t_xy'] = min(self[u][v]['t_xy'], 100.0)
+A atualização do feromônio nas arestas ocorre após a construção do grafo ou ao final de cada iteração.
 
+Dado que:
 
+\begin{itemize}
+    \item $\tau_{xy}$ é a taxa de feromônio depositado na aresta
+    \item $\sigma$ é a taxa de evaporação do feromônio $(0 < \sigma < 1)$.
+    \item $\Delta \tau _{xy}^k$ é a  quantidade de feromônio que a formiga $k$ irá depositar na aresta $xy$.
+\end{itemize}
 
-$$t_{xy} \leftarrow \frac{fitness_k - pheromone_{xy} + 0.5}{\max \forall fitness}$$
+A taxa de depósito é:
+
+\[\Delta \tau _{xy}^k = \frac{{fit({P^k}) - fit(\{ e_1^k,e_2^k, \ldots ,e_{xy}^k\} ) + 0.5}}{{\max \left( {fit({P^k});{\rm{for\ all\ ants}}} \right)}}\]
 
 Assim o feromônio é mais forte no início do caminho e fica mais fraco ao final. Isto ajuda
 a criar mais caminhos com o prefixo do melhor caminho e tentar variar nas arestas posteriores.
+Também sofre uma normalização dividindo pela fitness máximo entre todas as formigas, assim penalizando
+as formigas com fitness mais baixas.
+
+A atualização da taxa de feromônio e dada por:
+
+\[{\tau _{xy}} \leftarrow \min \left( {100,(1 - \sigma ){\tau _{xy}} + \sum\limits_k \Delta  \tau _{xy}^k} \right)\]
+
+Observe que há um teto de valor $100$ para evitar que o valor exploda e que matenha uma certa variabilidade dos caminhos. 

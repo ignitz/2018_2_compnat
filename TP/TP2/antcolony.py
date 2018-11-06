@@ -9,6 +9,15 @@ OUTPUT_FOLDER = 'output/'
 
 
 def read_dataset(infilename):
+    """Ler arquivos txt e retornam em formato de lista
+    
+    Arguments:
+        infilename {str} -- nome do arquivo
+    
+    Returns:
+        list -- lista multi dimensional
+    """
+
     try:
         with open('datasets/' + infilename) as f:
             content = f.read()
@@ -23,6 +32,12 @@ def read_dataset(infilename):
         raise
 
 def plot_graph(G):
+    """Plota gráfico em formato networkx
+    
+    Arguments:
+        G {instance of Graph} -- Grafo direcionado ou não
+    """
+
     labels = nx.get_edge_attributes(G,'p_xy')
     pos = nx.circular_layout(G)
     nx.draw(G, pos, with_labels=True)
@@ -33,7 +48,12 @@ def plot_graph(G):
     plt.show()
 
 class Ant:
-    """[summary]
+    """Atributos auxiliares para cada formiga
+    origin: vértice de origem
+    dest: vértice de destino
+    path: armazena o caminho
+    fitness: o custo total do caminho
+    pheromone: custo parciais para a atualização do feromônio em cada aresta
     """
     def __init__(self, origin, dest):
         self.origin = origin
@@ -43,13 +63,29 @@ class Ant:
         self.pheromone = []
 
 class AntColony(nx.DiGraph):
-    """[summary]
-    
-    Raises:
-        NotImplementedError -- [description]
+    """ACO - Ant Colony Optimization
+    É uma extensão da classe DiGraph.
+    Contém métodos de extensão para o algoritmo de colônias de formigas
     """
 
     def __init__(self, dataset_file, ants_num=50, it_num=50, origin=None, dest=None, alpha=1.0, beta=1.0, sigma=0.01, init_phero=0.1, k_ants=0):
+        """AntColony __init__.
+        
+        Arguments:
+            dataset_file {str} -- Nome do dataset (sem .txt)
+        
+        Keyword Arguments:
+            ants_num {int} -- número de formigas (default: {50})
+            it_num {int} -- quantidade de iterações (default: {50})
+            origin {int} -- vértice de origem (default: {None})
+            dest {int} -- vértice de destino (default: {None})
+            alpha {float} -- parâmetro do feromônio (default: {1.0})
+            beta {float} -- parâmetro da atratividade (default: {1.0})
+            sigma {float} -- taxa de evaporação do feromônio (default: {0.01})
+            init_phero {float} -- feromônio inicial (default: {0.1})
+            k_ants {int} -- quantidade de formigas para elitismo de cada iteração (default: {0})
+        """
+
         nx.DiGraph.__init__(self)
         self.alpha = alpha
         self.beta = beta
@@ -145,28 +181,66 @@ class AntColony(nx.DiGraph):
 
     
     def add_edge(self, edge):
+        """adiciona aresta com pesos e armazena atributos
+        
+        Arguments:
+            edge {tuple} -- (u,v, peso da aresta)
+        """
+
         assert(type(edge) is tuple)
         self.add_weighted_edges_from([edge], t_xy=0.0, p_xy=0.0, color='black')
     
     def add_edges(self, list_edges):
+        """adiciona uma lista de arestas e armazenam atributos
+        
+        Arguments:
+            list_edges {list of tuples} -- lista de (u,v, peso da aresta)
+        """
+
         assert(type(list_edges) is list)
         for e in list_edges:
             assert((type(e) is list) or (type(e) is tuple))
         self.add_weighted_edges_from(list_edges, t_xy=0.0, p_xy=0.0, color='black')
 
     def get_weight(self, u, v):
+        """retorna o peso da aresta
+        
+        Arguments:
+            u {int} -- aresta de saída
+            v {int} -- aresta de entrada
+        
+        Returns:
+            int -- peso da aresta
+        """
+
         if self.has_edge(u, v):
             return self[u][v]['weight']
         else:
             raise 'Edge ({},{}) not exist'.format(u, v)
     
     def get_edge(self, u, v):
+        """retorna dados da aresta
+        
+        Arguments:
+            u {int} -- aresta de saída
+            v {int} -- aresta de entrada
+        
+        Returns:
+            dict -- dados da aresta (peso, t_xy, p_xy) além de mais informação da classe nx.Graph
+        """
+
         if self.has_edge(u, v):
             return self[u][v]
         else:
             raise 'Edge ({},{}) not exist'.format(u, v)
     
     def plot_neighbors(self, u):
+        """Plota apenas os vértices e arestas vizinhas ao vértice "u" DEBUG PURPOSE
+        
+        Arguments:
+            u {int} -- aresta desejada
+        """
+
         if self.has_node(u):
             nodes = [u]
             nodes += self.neighbors(u)
@@ -175,22 +249,61 @@ class AntColony(nx.DiGraph):
             print('node {} don\'t exists in graph!'.format(u))
     
     def plot_graph(self):
+        """Plota o grafo da classe AntColony
+        """
+
         plot_graph(self)
     
     def get_pheromone(self, u, v):
+        """Retorna o feromônio da aresta
+        
+        Arguments:
+            u {int} -- aresta de origem
+            v {int} -- aresta de entrada
+        
+        Returns:
+            float -- retorna a taxa de feromônio na aresta
+        """
+
         assert(self.has_edge(u, v))
         return self.get_edge(u,v)['t_xy']
     
     def set_pheromone(self, u, v, new_pxy):
+        """Seta novo valor do feromônio na aresta
+        
+        Arguments:
+            u {int} -- aresta de origem
+            v {int} -- aresta de entrada
+            new_pxy {float} -- novo valor para t_xy na aresta
+        """
+
         assert(self.has_edge(u, v))
         assert(type(new_pxy) is float)
         self[u][v]['t_xy'] = new_pxy
 
     def get_neighbors(self, u):
+        """Retorna os nós vizinhos a "u"
+        
+        Arguments:
+            u {int} -- vértice
+        
+        Returns:
+            lista de identificadores do nó -- example [2,3,5 ...] se utilizar inteiros
+        """
+
         assert(self.has_node(u))
         return list(self.neighbors(u))
       
     def fitness(self, path):
+        """Retorna a fitness do caminho dado
+        
+        Arguments:
+            path {list} -- lista de nós do caminho
+        
+        Returns:
+            int -- custo total do caminho
+        """
+
         assert(type(path) is list)
         if (len(path) == 0):
             return 0
@@ -207,12 +320,22 @@ class AntColony(nx.DiGraph):
         return ttl_weight
         
     def evaporate_pheromones(self):
+        """Evapora a taxa de feromônio de todas as arestas
+
+        A evaporação depende do valor de sigma
+        """
+
         for u in list(self.nodes()):
             for v in self.get_neighbors(u):
                 curr_pheromone = self.get_pheromone(u,v)
                 self.set_pheromone(u, v, curr_pheromone*(1-self.sigma))
     
     def update_probs(self):
+        """Atualiza todos os atributos de probabilidade p_xy em todas as arestas
+
+        A probabilidade é normalizada para que todos os vizinhos.
+        """
+
         for u in list(self.nodes()):
             neighbors = self.get_neighbors(u)
             aux_list = []
@@ -231,6 +354,18 @@ class AntColony(nx.DiGraph):
                 self[u][v]['p_xy'] = aux/normalize
     
     def choose_new_node(self, u, excl_nodes=[]):
+        """Escolhe um novo nó adjancente a "u" utilizando o atributo de probabilidade das arestas
+        
+        Arguments:
+            u {int} -- vértice do estado atual
+        
+        Keyword Arguments:
+            excl_nodes {list} -- lista de nós que deseje excluir da escolha (default: {[]})
+        
+        Returns:
+            vértice -- retorna o vértice escolhido
+        """
+
         all_probs = []
         vs = self.get_neighbors(u)
         if len(vs) == 0: return u
@@ -245,7 +380,11 @@ class AntColony(nx.DiGraph):
         return vs[choice]
 
     def update_pheromone(self, max_pher=None):
-        # update pheromone
+        """Atualiza os pheromonios das arestas em que as formigas passaram
+        
+        Keyword Arguments:
+            max_pher {int} -- custo máximo para normalização/penalização, se não for passado é calculado (default: {None})
+        """
 
         if max_pher is None:
             max_pher = 0
@@ -262,6 +401,10 @@ class AntColony(nx.DiGraph):
                 self[u][v]['t_xy'] = min(self[u][v]['t_xy'], 100.0)
     
     def flux_colony(self):
+        """Fluxo do algoritmo pela quantidade de iterações
+        No final, o arquivo de dados de saída é movido da pasta temporária para a pasta output/
+        """
+
         for iteration in range(self.it_num):
             print('Iteration', iteration + 1)
             self.iteration()
@@ -269,6 +412,9 @@ class AntColony(nx.DiGraph):
         shutil.move(self.out_filename, self.out_final_filename)
 
     def iteration(self):
+        """Iteração do algoritmo
+        """
+
         self.ants.sort(key=lambda x: x.fitness, reverse=True)
         
         if self.ants_num < self.k_ants:
@@ -323,6 +469,12 @@ class AntColony(nx.DiGraph):
         # self.print_pheromones()
     
     def print_ants(self, n=None):
+        """Imprime todas as formigas DEBUG PURPOSE
+        
+        Keyword Arguments:
+            n {int} -- imprime n formigas (default: {None})
+        """ 
+
         self.ants.sort(key=lambda x: x.fitness, reverse=True)
         
         print('------------------------------\nAnts\n------------------------------')
@@ -330,6 +482,9 @@ class AntColony(nx.DiGraph):
             print(ant.fitness, ant.path)
 
     def print_fitness_stat(self):
+        """Imprime o Máximo, Mínimo e a Média das fitsness das formigas
+        Também é gravado estes dados no arquivo de saída.
+        """
 
         self.ants.sort(key=lambda x: x.fitness, reverse=True)
         fitness = []

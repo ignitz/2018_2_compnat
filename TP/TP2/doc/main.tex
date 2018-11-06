@@ -2,12 +2,13 @@
 \usepackage[utf8]{inputenc}
 
 %\usepackage[retainorgcmds]{IEEEtrantools}
-%\usepackage{bibentry}  
+% \usepackage{bibentry}  
 \usepackage{xcolor,soul,framed} %,caption
 
 \colorlet{shadecolor}{yellow}
 % \usepackage{color,soul}
 \usepackage[pdftex]{graphicx}
+\usepackage{grffile}
 \graphicspath{{../pdf/}{../jpeg/}}
 \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
 
@@ -40,8 +41,10 @@
 % \input{chapters/abstract.tex}
 \input{chapters/introducao.tex}
 \input{chapters/implementacao.tex}
-% \input{chapters/experimentos.tex}
-% \input{chapters/conclusao.tex}
+\input{chapters/experimentos.tex}
+\input{chapters/conclusao.tex}
+
+\bibliography{ref}
 
 \end{document}
 
