@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.layers import Dropout
 import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 
 from sklearn.neural_network import MLPClassifier
 
@@ -169,6 +169,49 @@ def try_sklearn():
     std_nnc=scores.std()
     print("..and a standar deviation of %8.6f" %(std_nnc))
 
+def keras_example():
+    
+
+    X, Y, input_shape, num_of_classes, index_class = read_data()
+    x_train, y_train = X[:4000], Y[:4000]
+    x_test, y_test = X[4000:], Y[4000:]
+
+    model = Sequential()
+    model.add(Dense(units=16, activation='tanh', input_dim=15))
+    model.add(Dense(units=16, activation='tanh'))
+    model.add(Dense(units=3, activation='softmax'))
+
+    model.compile(loss=tf.keras.losses.sparse_categorical_crossentropy,
+                    optimizer=tf.keras.optimizers.SGD(lr=0.01, momentum=0.9, nesterov=True), metrics=['acc'])
+    
+    # x_train and y_train are Numpy arrays --just like in the Scikit-Learn API.
+    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=100, batch_size=4000)
+    
+    # for _ in range(100):
+    #     model.train_on_batch(x_train, y_train)
+    #     result1 = model.evaluate(x_train, y_train)
+    #     result2 = model.evaluate(x_test, y_test)
+    #     print(result1[1], result2[1])
+
+
+
+    # model.train_on_batch(x_batch, y_batch)
+    loss_and_metrics = model.evaluate(x_test, y_test)
+    print(loss_and_metrics)
+
+    # classes = model.predict(x_test, batch_size=128)
+    # print(len(classes))
+    
+    # print(history.history['acc'])
+    # print(history.history['val_acc'])
+
+    # plt.plot(list(range(1, len(history.history['acc']) + 1)), history.history['acc'])
+    # plt.plot(list(range(1, len(history.history['val_acc']) + 1)), history.history['val_acc'])
+    # # plt.save_fig('temp.pdf')
+    # plt.show()
+
+
 if __name__ == "__main__":
-    try_tf()
+    # try_tf()
     # try_sklearn()
+    keras_example()
