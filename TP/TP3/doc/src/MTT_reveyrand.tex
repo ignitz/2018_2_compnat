@@ -124,9 +124,32 @@ Por curiosidade foi analisado também a correlação entre os atributos na figur
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=1.2\textwidth]{pdf/"SDSS Correlation".pdf}
+  \includegraphics[width=\textwidth]{pdf/"SDSS Correlation".pdf}
   \caption{Correlação entre os atributos}
   \label{fig:corrdata}
+\end{figure}
+
+Para deixar mais claro, foi o plot com alguns atributos nas Figuras \ref{fig:pairplot1}, \ref{fig:pairplot2} e \ref{fig:pairplot3} para verificar que valores com correlação distante de zero se aproximam a uma reta.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pdf/snsplot1.png}
+  \caption{Pairplotnos nos atributos de ondas.}
+  \label{fig:pairplot1}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pdf/snsplot2.png}
+  \caption{Pairplot nos atributos \textbf{ra}, \textbf{dec}, \textbf{run} e \textbf{camcol}.}
+  \label{fig:pairplot2}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pdf/snsplot3.png}
+  \caption{Pairplot nos atributos \textbf{field}, \textbf{specobjid}, \textbf{redshift}, \textbf{plate}, \textbf{mjd} e \textbf{fiberid}.}
+  \label{fig:pairplot3}
 \end{figure}
 
 \subsection{Carregamento dos dados}
@@ -157,7 +180,7 @@ Toda a implementação está inclusa no arquivo \textbf{tp3.py} contendo a leitu
     \item A versão do \textbf{Python 3.6.7}. A versão do Python 3.7.X apresenta problemas no momento com o TensorFlow.
     \item A versão do \textbf{TensorFlow 1.12.0}.
     \item Utilizei o \textbf{scikit-learn} para utilizar duas funções para normalizar os valores dos dados. (\textbf{LabelEncoder}, \textbf{MinMaxScaler})
-    \item O arquivo contendo as dependências \textbf{requiriments.txt}.
+    \item O arquivo contendo as dependências \textbf{requirements.txt}.
 \end{itemize}
 
 O \textbf{main} do \textbf{tp3.py} contém um exemplo de execução. Ele executa a tarefa responsável pela função \text{run\_job} e depois os resultados são gravados em um gráfico em \textbf{pdf} na pasta \textbf{output}.
@@ -368,7 +391,7 @@ da média de 10 execuções para uma melhor confiabilidade de dados obtidos.
     
     \begin{figure}[H]
         \centering
-        \includegraphics[width=1.0\textwidth]{pdf/"Guia006".pdf}
+        \includegraphics[width=1.0\textwidth]{pdf/"Guia005".pdf}
         \caption{Comparação utilizando Dropout Regularization}
         \label{fig:compdropout}
     \end{figure}
